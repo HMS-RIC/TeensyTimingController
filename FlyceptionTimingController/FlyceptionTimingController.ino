@@ -16,12 +16,18 @@ const unsigned long FluoView_Period 	= 10 * 1000; // 10 ms = 100Hz
 
 // define durations in us
 const unsigned long ArenaView_Duration	= 100;	// 100 us
-const unsigned long FlyView_Duration 	= 100;	// 100 us
-const unsigned long FluoView_Duration 	= 5000; //   5 ms
+const unsigned long FlyView_Duration 	= 900;	// 900 us
+const unsigned long FluoView_Duration 	= 5000; //   5 ms (duration doesn't matter; FluoView shutter is set in software)
+const unsigned long Flash_Duration 	    = 1000;	//   1 ms (duration doesn't matter. Flash duration set on flash.)
 
-// Flash times in ms (not us)
+// flash interval in ms (not us)
 const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
-const unsigned long Flash_Duration_ms 	= 1;		 // 1 ms
+
+// pulse polarity
+const char ArenaView_ON = HIGH;   const char ArenaView_OFF = LOW;
+const char FlyView_ON   = LOW;    const char FlyView_OFF   = HIGH;
+const char FluoView_ON  = HIGH;   const char FluoView_OFF  = LOW;
+const char Flash_ON     = LOW;    const char Flash_OFF     = HIGH;
 
 bool flashTriggered = false;
 bool flashAtNextTimeWidow = false;
@@ -38,10 +44,10 @@ void setup() {
 	pinMode(FluoView_Pin, OUTPUT);
 	pinMode(Flash_Pin, OUTPUT);
 
-	digitalWrite(ArenaView_Pin, LOW);
-	digitalWrite(FlyView_Pin, LOW);
-	digitalWrite(FluoView_Pin, LOW);
-	digitalWrite(Flash_Pin, HIGH);
+	digitalWrite(ArenaView_Pin, ArenaView_OFF);
+	digitalWrite(FlyView_Pin, FlyView_OFF);
+	digitalWrite(FluoView_Pin, FluoView_OFF);
+	digitalWrite(Flash_Pin, Flash_OFF);
 
 	Serial.begin(9600);
 	delay(200);
@@ -82,20 +88,20 @@ void setup() {
 // functions called by IntervalTimer should be short, run as quickly as
 // possible, and should avoid calling other functions if possible.
 void pulseArenaView() {
-	digitalWriteFast(ArenaView_Pin, HIGH);
+	digitalWriteFast(ArenaView_Pin, ArenaView_ON);
 	TeensyDelay::trigger(ArenaView_Duration, 0);
 	if (flashAtNextTimeWidow) {
-		digitalWriteFast(Flash_Pin, LOW);
+		digitalWriteFast(Flash_Pin, Flash_ON);
 		flashAtNextTimeWidow = false;
-    TeensyDelay::trigger(FluoView_Duration, 3);
+        TeensyDelay::trigger(Flash_Duration, 3);
 	}
 }
 void pulseFlyView() {
-	digitalWriteFast(FlyView_Pin, HIGH);
+	digitalWriteFast(FlyView_Pin, FlyView_ON);
 	TeensyDelay::trigger(FlyView_Duration, 1);
 }
 void pulseFluoView() {
-	digitalWriteFast(FluoView_Pin, HIGH);
+	digitalWriteFast(FluoView_Pin, FluoView_ON);
 	TeensyDelay::trigger(FluoView_Duration, 2);
 }
 void pulseFlash() {
@@ -104,10 +110,10 @@ void pulseFlash() {
 	flashAtNextTimeWidow = true;
 }
 
-void ArenaViewOff() {digitalWriteFast(ArenaView_Pin, LOW);}
-void FlyViewOff() {digitalWriteFast(FlyView_Pin, LOW);}
-void FluoViewOff() {digitalWriteFast(FluoView_Pin, LOW);}
-void FlashOff() {digitalWriteFast(Flash_Pin, HIGH);}
+void ArenaViewOff() {digitalWriteFast(ArenaView_Pin, ArenaView_OFF);}
+void FlyViewOff() {digitalWriteFast(FlyView_Pin, FlyView_OFF);}
+void FluoViewOff() {digitalWriteFast(FluoView_Pin, FluoView_OFF);}
+void FlashOff() {digitalWriteFast(Flash_Pin, Flash_OFF);}
 
 
 void loop() {
