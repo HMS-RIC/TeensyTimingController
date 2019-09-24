@@ -23,6 +23,10 @@ const unsigned long Flash_Duration 	    = 1000;	//   1 ms (duration doesn't matt
 // flash interval in ms (not us)
 const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
 
+// flash pre-trigger offset
+const unsigned long Flash_Pre_Trig 	    = 20; // 20 us
+
+
 // pulse polarity
 const char ArenaView_ON = HIGH;   const char ArenaView_OFF = LOW;
 const char FlyView_ON   = LOW;    const char FlyView_OFF   = HIGH;
@@ -30,13 +34,14 @@ const char FluoView_ON  = HIGH;   const char FluoView_OFF  = LOW;
 const char Flash_ON     = LOW;    const char Flash_OFF     = HIGH;
 
 bool flashTriggered = false;
-bool flashAtNextTimeWidow = false;
+volatile bool flashAtNextTimeWidow = false;
 elapsedMillis timeSinceFlash;
 
-// Create IntervalTimer objects
+// Create IntervalTimer objects (up to 4 can be created on Teensy 3.2)
 IntervalTimer arenaViewInervalTimer;
 IntervalTimer flyViewIntervalTimer;
 IntervalTimer fluoViewIntervalTimer;
+IntervalTimer flashIntervalTimer;
 
 void setup() {
 	pinMode(ArenaView_Pin, OUTPUT);
@@ -83,6 +88,10 @@ void setup() {
 	arenaViewInervalTimer.priority(64);
 	flyViewIntervalTimer.priority(64);
 	fluoViewIntervalTimer.priority(64);
+	flashIntervalTimer.priority(64);
+
+	flashIntervalTimer.begin(checkFlash, ArenaView_Period); // check for flash at AV interval
+	delayMicroseconds(Flash_Pre_Trig);
 	noInterrupts();
 	arenaViewInervalTimer.begin(pulseArenaView, ArenaView_Period);
 	flyViewIntervalTimer.begin(pulseFlyView, FlyView_Period);
@@ -95,11 +104,6 @@ void setup() {
 void pulseArenaView() {
 	digitalWriteFast(ArenaView_Pin, ArenaView_ON);
 	TeensyDelay::trigger(ArenaView_Duration, 0);
-	if (flashAtNextTimeWidow) {
-		digitalWriteFast(Flash_Pin, Flash_ON);
-		flashAtNextTimeWidow = false;
-        TeensyDelay::trigger(Flash_Duration, 3);
-	}
 }
 void pulseFlyView() {
 	digitalWriteFast(FlyView_Pin, FlyView_ON);
@@ -109,10 +113,17 @@ void pulseFluoView() {
 	digitalWriteFast(FluoView_Pin, FluoView_ON);
 	TeensyDelay::trigger(FluoView_Duration, 2);
 }
-void pulseFlash() {
-	// Don't actually flash yet.
-	// Instead set a flag to flash at the next arenaView/fluoView frame.
-	flashAtNextTimeWidow = true;
+// void pulseFlash() {
+// 	// Don't actually flash yet.
+// 	// Instead set a flag to flash at the next arenaView/fluoView frame.
+// 	flashAtNextTimeWidow = true;
+// }
+void checkFlash() {
+	if (flashAtNextTimeWidow) {
+		digitalWriteFast(Flash_Pin, Flash_ON);
+		flashAtNextTimeWidow = false;
+        TeensyDelay::trigger(Flash_Duration, 3);
+	}
 }
 
 void ArenaViewOff() {digitalWriteFast(ArenaView_Pin, ArenaView_OFF);}
@@ -132,14 +143,16 @@ void loop() {
 		}
 
 		// 2. generate flash and trigger future flash
-		pulseFlash();
+		flashAtNextTimeWidow = true;
+		// pulseFlash();
 		flashTriggered = true;
 		timeSinceFlash = 0;
 	}
 
 	// generate triggered flash, if needed
 	if (flashTriggered && (timeSinceFlash >= Flash_Interval_ms)) {
-		pulseFlash();
+		flashAtNextTimeWidow = true;
+		// pulseFlash();
 		flashTriggered = false;
 	}
 
