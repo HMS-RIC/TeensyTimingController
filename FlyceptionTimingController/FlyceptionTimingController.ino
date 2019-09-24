@@ -80,9 +80,11 @@ void setup() {
 	TeensyDelay::addDelayChannel(FlashOff, 3);      // Delay timer 3: Turn off Flash pulse
 
 	// Start up interval timers to generate periodic pulses
+    noInterrupts();
 	arenaViewInervalTimer.begin(pulseArenaView, ArenaView_Period);
 	flyViewIntervalTimer.begin(pulseFlyView, FlyView_Period);
 	fluoViewIntervalTimer.begin(pulseFluoView, FluoView_Period);
+    interrupts()
 }
 
 // functions called by IntervalTimer should be short, run as quickly as
