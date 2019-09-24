@@ -3,17 +3,7 @@
 // https://github.com/luni64/TeensyDelay
 #include <TeensyDelay.h>
 
-
-// Create an IntervalTimer object
-IntervalTimer myTimer1;
-IntervalTimer myTimer2;
-IntervalTimer myTimer3;
-
-
-// 1kHz  fly-view camera
-// 100 Hz  fluo-view camera
-// 100 Hz  flash and arena-view cameras
-
+// define output pins
 const int ArenaView_Pin = 0;
 const int FlyView_Pin 	= 1;
 const int FluoView_Pin 	= 2;
@@ -36,6 +26,11 @@ const unsigned long Flash_Duration_ms 	= 100;		 // 100 ms
 bool flashTriggered = false;
 bool flashAtNextTimeWidow = false;
 elapsedMillis timeSinceFlash;
+
+// Create IntervalTimer objects
+IntervalTimer arenaViewInervalTimer;
+IntervalTimer flyViewIntervalTimer;
+IntervalTimer fluoViewIntervalTimer;
 
 void setup() {
 	pinMode(ArenaView_Pin, OUTPUT);
@@ -76,9 +71,10 @@ void setup() {
 	TeensyDelay::addDelayChannel(FlyViewOff, 1);    // add a delay channel and attach callback function
 	TeensyDelay::addDelayChannel(FluoViewOff, 2);    // add a delay channel and attach callback function
 
-	myTimer1.begin(pulseArenaView, ArenaView_Period);
-	myTimer2.begin(pulseFlyView, FlyView_Period);
-	myTimer3.begin(pulseFluoView, FluoView_Period);
+	// Start up interval timers to generate periodic pulses
+	arenaViewInervalTimer.begin(pulseArenaView, ArenaView_Period);
+	flyViewIntervalTimer.begin(pulseFlyView, FlyView_Period);
+	fluoViewIntervalTimer.begin(pulseFluoView, FluoView_Period);
 }
 
 // functions called by IntervalTimer should be short, run as quickly as
@@ -100,9 +96,8 @@ void pulseFluoView() {
 	TeensyDelay::trigger(FluoView_Duration, 2);
 }
 void pulseFlash() {
-	// TeensyDelay won't work (without some tricks) for durations > 65ms
-	// We will use regular 'delay()' here, even though we won't catch Serial input
-	// until after function returns.
+	// Don't actually flash yet.
+	// Instead set a flag to flash at the next arenaView/fluoView frame.
 	flashAtNextTimeWidow = true;
 	// digitalWriteFast(Flash_Pin, LOW);
 	delay(Flash_Duration_ms);
@@ -114,8 +109,6 @@ void FlyViewOff() {digitalWriteFast(FlyView_Pin,LOW);}
 void FluoViewOff() {digitalWriteFast(FluoView_Pin,LOW);}
 
 
-// The main program will print the blink count
-// to the Arduino Serial Monitor
 void loop() {
 
 	// Check for any incoming characters, if so trigger flash
