@@ -1,5 +1,5 @@
 
-// The following library can be downloaded from 
+// The following library can be downloaded from
 // https://github.com/luni64/TeensyDelay
 #include <TeensyDelay.h>
 
@@ -31,9 +31,10 @@ const unsigned long FluoView_Duration 	= 5000; //   5 ms
 
 // Flash times in ms (not us)
 const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
-const unsigned long Flash_Duration_ms 	= 1000;		 // 1 sec
+const unsigned long Flash_Duration_ms 	= 100;		 // 100 ms
 
 bool flashTriggered = false;
+bool flashAtNextTimeWidow = false;
 elapsedMillis timeSinceFlash;
 
 void setup() {
@@ -74,7 +75,6 @@ void setup() {
 	TeensyDelay::addDelayChannel(ArenaViewOff, 0);    // add a delay channel and attach callback function
 	TeensyDelay::addDelayChannel(FlyViewOff, 1);    // add a delay channel and attach callback function
 	TeensyDelay::addDelayChannel(FluoViewOff, 2);    // add a delay channel and attach callback function
-	TeensyDelay::addDelayChannel(FlashOff, 3);    // add a delay channel and attach callback function
 
 	myTimer1.begin(pulseArenaView, ArenaView_Period);
 	myTimer2.begin(pulseFlyView, FlyView_Period);
@@ -86,6 +86,10 @@ void setup() {
 void pulseArenaView() {
 	digitalWriteFast(ArenaView_Pin, HIGH);
 	TeensyDelay::trigger(ArenaView_Duration, 0);
+	if (flashAtNextTimeWidow) {
+		digitalWriteFast(Flash_Pin, LOW);
+		flashAtNextTimeWidow = false;
+	}
 }
 void pulseFlyView() {
 	digitalWriteFast(FlyView_Pin, HIGH);
@@ -99,7 +103,8 @@ void pulseFlash() {
 	// TeensyDelay won't work (without some tricks) for durations > 65ms
 	// We will use regular 'delay()' here, even though we won't catch Serial input
 	// until after function returns.
-	digitalWriteFast(Flash_Pin, LOW);
+	flashAtNextTimeWidow = true;
+	// digitalWriteFast(Flash_Pin, LOW);
 	delay(Flash_Duration_ms);
 	digitalWriteFast(Flash_Pin, HIGH);
 }
@@ -107,7 +112,6 @@ void pulseFlash() {
 void ArenaViewOff() {digitalWriteFast(ArenaView_Pin,LOW);}
 void FlyViewOff() {digitalWriteFast(FlyView_Pin,LOW);}
 void FluoViewOff() {digitalWriteFast(FluoView_Pin,LOW);}
-void FlashOff() {digitalWriteFast(Flash_Pin,HIGH);}
 
 
 // The main program will print the blink count
