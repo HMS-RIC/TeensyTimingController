@@ -21,7 +21,7 @@ const unsigned long FluoView_Duration 	= 5000; //   5 ms
 
 // Flash times in ms (not us)
 const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
-const unsigned long Flash_Duration_ms 	= 100;		 // 100 ms
+const unsigned long Flash_Duration_ms 	= 1;		 // 1 ms
 
 bool flashTriggered = false;
 bool flashAtNextTimeWidow = false;
@@ -66,10 +66,12 @@ void setup() {
 	Serial.println("");
 	Serial.println("Press <Return> to trigger flash.");
 
-	TeensyDelay::begin();                 // setup timer
-	TeensyDelay::addDelayChannel(ArenaViewOff, 0);    // add a delay channel and attach callback function
-	TeensyDelay::addDelayChannel(FlyViewOff, 1);    // add a delay channel and attach callback function
-	TeensyDelay::addDelayChannel(FluoViewOff, 2);    // add a delay channel and attach callback function
+	// Set up delay timers to turn off pulses
+	TeensyDelay::begin();
+	TeensyDelay::addDelayChannel(ArenaViewOff, 0);  // Delay timer 0: Turn off ArenaView pulse
+	TeensyDelay::addDelayChannel(FlyViewOff, 1);    // Delay timer 1: Turn off FlyView pulse
+	TeensyDelay::addDelayChannel(FluoViewOff, 2);   // Delay timer 2: Turn off FluoView pulse
+	TeensyDelay::addDelayChannel(FlashOff, 3);      // Delay timer 3: Turn off Flash pulse
 
 	// Start up interval timers to generate periodic pulses
 	arenaViewInervalTimer.begin(pulseArenaView, ArenaView_Period);
@@ -85,6 +87,7 @@ void pulseArenaView() {
 	if (flashAtNextTimeWidow) {
 		digitalWriteFast(Flash_Pin, LOW);
 		flashAtNextTimeWidow = false;
+    TeensyDelay::trigger(FluoView_Duration, 3);
 	}
 }
 void pulseFlyView() {
@@ -99,14 +102,12 @@ void pulseFlash() {
 	// Don't actually flash yet.
 	// Instead set a flag to flash at the next arenaView/fluoView frame.
 	flashAtNextTimeWidow = true;
-	// digitalWriteFast(Flash_Pin, LOW);
-	delay(Flash_Duration_ms);
-	digitalWriteFast(Flash_Pin, HIGH);
 }
 
-void ArenaViewOff() {digitalWriteFast(ArenaView_Pin,LOW);}
-void FlyViewOff() {digitalWriteFast(FlyView_Pin,LOW);}
-void FluoViewOff() {digitalWriteFast(FluoView_Pin,LOW);}
+void ArenaViewOff() {digitalWriteFast(ArenaView_Pin, LOW);}
+void FlyViewOff() {digitalWriteFast(FlyView_Pin, LOW);}
+void FluoViewOff() {digitalWriteFast(FluoView_Pin, LOW);}
+void FlashOff() {digitalWriteFast(Flash_Pin, HIGH);}
 
 
 void loop() {
