@@ -23,8 +23,9 @@ const unsigned long Flash_Duration 	    = 1000;	//   1 ms (duration doesn't matt
 // flash interval in ms (not us)
 const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
 
-// flash pre-trigger offset
-const unsigned long Flash_Pre_Trig 	    = 20; // 20 us
+// timing offsets
+const unsigned long Fluo_Pre_Trig    = 3000; //  3 ms
+const unsigned long Flash_Pre_Trig   = 20;   // 20 us
 
 
 // pulse polarity
@@ -96,12 +97,13 @@ void setup() {
 	fluoViewIntervalTimer.priority(0);
 	flashIntervalTimer.priority(0);
 
-	flashIntervalTimer.begin(checkFlash, ArenaView_Period); // check for flash at AV interval
-	delayMicroseconds(Flash_Pre_Trig);
+	fluoViewIntervalTimer.begin(pulseFluoView, FluoView_Period);
+	delayMicroseconds(Fluo_Pre_Trig);
+	flyViewIntervalTimer.begin(pulseFlyView, FlyView_Period);
+	delayMicroseconds(FlyView_Pre_Trig);
 	noInterrupts();
 	arenaViewInervalTimer.begin(pulseArenaView, ArenaView_Period);
-	flyViewIntervalTimer.begin(pulseFlyView, FlyView_Period);
-	fluoViewIntervalTimer.begin(pulseFluoView, FluoView_Period);
+	flashIntervalTimer.begin(checkFlash, ArenaView_Period); // check for flash at AV interval
 	interrupts();
 
 	arenaViewInervalTimer.priority(0);
