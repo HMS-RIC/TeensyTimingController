@@ -44,6 +44,12 @@ IntervalTimer fluoViewIntervalTimer;
 IntervalTimer flashIntervalTimer;
 
 void setup() {
+
+	// reduce jitter??
+	//FMC_PFAPR |= 0x00FF0000; // Disable prefetching
+	SCB_SHPR3 = 0x20200000;  // Systick = priority 32 (defaults to zero)
+	//
+
 	pinMode(ArenaView_Pin, OUTPUT);
 	pinMode(FlyView_Pin, OUTPUT);
 	pinMode(FluoView_Pin, OUTPUT);
@@ -85,10 +91,10 @@ void setup() {
 	TeensyDelay::addDelayChannel(FlashOff, 3);      // Delay timer 3: Turn off Flash pulse
 
 	// Start up interval timers to generate periodic pulses
-	arenaViewInervalTimer.priority(64);
-	flyViewIntervalTimer.priority(64);
-	fluoViewIntervalTimer.priority(64);
-	flashIntervalTimer.priority(64);
+	arenaViewInervalTimer.priority(0);
+	flyViewIntervalTimer.priority(0);
+	fluoViewIntervalTimer.priority(0);
+	flashIntervalTimer.priority(0);
 
 	flashIntervalTimer.begin(checkFlash, ArenaView_Period); // check for flash at AV interval
 	delayMicroseconds(Flash_Pre_Trig);
@@ -96,7 +102,12 @@ void setup() {
 	arenaViewInervalTimer.begin(pulseArenaView, ArenaView_Period);
 	flyViewIntervalTimer.begin(pulseFlyView, FlyView_Period);
 	fluoViewIntervalTimer.begin(pulseFluoView, FluoView_Period);
-	interrupts()
+	interrupts();
+
+	arenaViewInervalTimer.priority(0);
+	flyViewIntervalTimer.priority(0);
+	fluoViewIntervalTimer.priority(0);
+	flashIntervalTimer.priority(0);
 }
 
 // functions called by IntervalTimer should be short, run as quickly as
