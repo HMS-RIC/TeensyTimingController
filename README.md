@@ -35,3 +35,5 @@ As written, the code uses pins 0–3 for digital outputs. I soldered up a small 
 connect the teensy pins to a ribbon cable that can be split up into four 2-conductor cables to 
 carry the output signals to downstream instruments (cameras, flashes, etc.).
 
+![Teensy connection photo](https://github.com/HMS-RIC/TeensyTimingController/blob/master/img/Teensy_for_Flyception_Timing.JPG)
+![Teensy connection circuit](https://github.com/HMS-RIC/TeensyTimingController/blob/master/img/TeensyTimingCircuit.jpg)
