@@ -25,8 +25,7 @@ const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
 
 // timing offsets
 const unsigned long Fluo_Pre_Trig    = 3000; //  3 ms
-const unsigned long Flash_Pre_Trig   = 20;   // 20 us
-
+const unsigned long FlyView_Pre_Trig 	    = 150; // 150 us
 
 // pulse polarity
 const char ArenaView_ON = HIGH;   const char ArenaView_OFF = LOW;
