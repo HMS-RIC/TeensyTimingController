@@ -21,7 +21,7 @@ const unsigned long FluoView_Duration 	= 5000; //   5 ms (duration doesn't matte
 const unsigned long Flash_Duration 	    = 1000;	//   1 ms (duration doesn't matter. Flash duration set on flash.)
 
 // flash interval in ms (not us)
-const unsigned long Flash_Interval_ms 	= 60 * 1000; // 60 seconds
+const unsigned long Flash_Interval_ms 	= 17 * 1000; // 17 seconds
 
 // timing offsets
 const unsigned long Fluo_Pre_Trig    = 3000; //  3 ms
@@ -155,7 +155,7 @@ void loop() {
 		}
 
 		// 2. generate flash and trigger future flash
-		flashAtNextTimeWidow = true;
+		flashAtNextTimeWidow = false; // 2020-01-14 Do not fire immediate flash
 		// pulseFlash();
 		flashTriggered = true;
 		timeSinceFlash = 0;
