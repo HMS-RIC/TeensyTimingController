@@ -5,7 +5,7 @@ Basic Teensy code to set up 3 digital channels with periodic pulse trains. For e
 period and pulse duration. You can start all channels in sync, or with arbitrary offsets. The code does not use PWM feature,
 instead it uses softwatre libraries to control the Teensy's timers. 
 
-This code was written to driving camera timing for the Flyception project, but can easily be generalized for 
+This code was written to control camera timing for the Flyception project, but can easily be generalized for 
 other timing-related projects. (For Flyception, there is also a fourth output that is not periodic, rather it is
 triggered by Serial input. It can be ignored when adapting this code for other uses.)
 
