@@ -21,7 +21,8 @@ const unsigned long FluoView_Duration 	= 5000; //   5 ms (duration doesn't matte
 const unsigned long Flash_Duration 	    = 1000;	//   1 ms (duration doesn't matter. Flash duration set on flash.)
 
 // flash interval in ms (not us)
-const unsigned long Flash_Interval_ms 	= 17 * 1000; // 17 seconds
+const unsigned long Default_Flash_Interval_ms 	= 17 * 1000; // 17 seconds
+unsigned long Flash_Interval_ms = Default_Flash_Interval_ms;
 
 // timing offsets
 const unsigned long Fluo_Pre_Trig    = 3000; //  3 ms
@@ -61,6 +62,7 @@ void setup() {
 	digitalWrite(Flash_Pin, Flash_OFF);
 
 	Serial.begin(9600);
+	Serial.setTimeout(10); // 10 ms timeout for parsing
 	delay(200);
 	Serial.println("Starting Flyception timing control...");
 	Serial.println("");
@@ -149,7 +151,9 @@ void loop() {
 	// Check for any incoming characters, if so trigger flash
 	if (Serial.available() > 0) {
 
-		// 1. Eat up all they bytes (we don't care about the content or how many bytes)
+		// 1. Get delay value (if present)
+		long delay = Serial.parseInt(); // has a 10ms timeout
+		// Eat up any extra bytes
 		while (Serial.available() > 0) {
 			Serial.read();
 		}
@@ -159,6 +163,7 @@ void loop() {
 		// pulseFlash();
 		flashTriggered = true;
 		timeSinceFlash = 0;
+		Flash_Interval_ms = delay;
 	}
 
 	// generate triggered flash, if needed
